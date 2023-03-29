@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <div id="pseudo-form">
+        <label for="pseudo">Pseudo :</label>
+        <input type="text" id="pseudo">
+        <button id="join-chat">Chatter</button>
+    </div>
+
+    <div id="chat" style="display: none;">
+        <div id="messages"></div>
+        <input type="text" id="message-input" placeholder="Écrivez votre message...">
+        <button id="send-message">Envoyer</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const pseudoForm = document.getElementById('pseudo-form');
+        const joinChatButton = document.getElementById('join-chat');
+        const pseudoInput = document.getElementById('pseudo');
+        const chat = document.getElementById('chat');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendMessageButton = document.getElementById('send-message');
+
+        joinChatButton.addEventListener('click', () => {
+            const pseudo = pseudoInput.value.trim();
+            if (pseudo) {
+                socket.emit('pseudo', pseudo);
+                pseudoForm.style.display = 'none';
+                chat.style.display = 'block';
+            }
+        });
+
+
+        sendMessageButton.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (text) {
+                socket.emit('message', text);
+                messageInput.value = '';
+            }
+        });
+
+        socket.on('message', (message) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.innerHTML = `<strong>${message.pseudo}</strong>: ${ message.text }`;
+            messagesDiv.appendChild(messageDiv);
+        });
+
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessageButton.click();
+            }
+        });
+    </script>
+</body>
+
+</html>
